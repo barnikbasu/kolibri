@@ -256,6 +256,68 @@ def get_file_checksums_url(channel_id, baseurl, version="1"):
     )
 
 
+def resolve_channel_token(token, baseurl=None):
+    """
+    Resolve a channel token to a channel ID by querying the channel lookup endpoint.
+
+    This function uses duck typing - it will work with any server (Studio or Kolibri instance)
+    that implements the /api/public/v1/channels/lookup/{token} endpoint.
+
+    :param token: The channel token to resolve
+    :param baseurl: The base URL of the content server (defaults to Studio)
+    :return: Tuple of (channel_id, all_channels) where all_channels is the full list from server
+    :raises: NetworkLocationNotFound if the server cannot be reached
+    :raises: NetworkLocationResponseFailure if the token is invalid or server returns an error
+    :raises: ValueError if response is invalid
+    """
+    from kolibri.core.discovery.utils.network.client import NetworkClient
+    from kolibri.core.discovery.utils.network.errors import NetworkLocationResponseFailure
+    from django.core.exceptions import ValidationError
+    from kolibri.utils.urls import validator
+
+    if baseurl:
+        try:
+            validator(baseurl)
+        except ValidationError:
+            raise ValueError("Invalid base URL: {}".format(baseurl))
+
+    # Build the lookup URL for the token
+    lookup_url = get_channel_lookup_url(identifier=token, baseurl=baseurl)
+
+    # Create a network client for the base URL
+    if baseurl:
+        client = NetworkClient.build_for_address(baseurl)
+    else:
+        # Default to Studio
+        from kolibri.core.discovery.well_known import CENTRAL_CONTENT_BASE_URL
+        client = NetworkClient.build_for_address(CENTRAL_CONTENT_BASE_URL)
+
+    # Make the request to resolve the token
+    response = client.get(lookup_url)
+
+    # Parse the response - the lookup endpoint returns a list of channels
+    try:
+        channels = response.json()
+    except (ValueError, Exception) as e:
+        raise ValueError(
+            "Server returned invalid response (expected JSON): {}".format(e)
+        )
+
+    if not channels or not isinstance(channels, list) or len(channels) == 0:
+        from kolibri.core.discovery.utils.network.errors import NetworkLocationResponseFailure
+        raise NetworkLocationResponseFailure(
+            "Token '{}' not found on content server".format(token)
+        )
+
+    # Validate that all channels have IDs
+    for channel in channels:
+        if not channel.get("id"):
+            raise ValueError("Invalid response from server: channel missing ID")
+
+    # Return the first channel ID and the full list (for handling multiple results)
+    return channels[0]["id"], channels
+
+
 SANDBOX = "sandbox/"
 
 ZIPCONTENT = "zipcontent/"
