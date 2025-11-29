@@ -45,3 +45,35 @@ Styling anti-patterns
 - **Complex pre-processor functionality** - use Vue `computed styles <https://vuejs.org/v2/guide/class-and-style.html>`__ instead
 - **Hard-coded values** - rely on variables defined in the core theme
 - **Left or right alignment on user-generated text** - use ``dir="auto"`` instead for RTL support
+- **Directional inline styles** - never use ``style=""`` or ``:style=""`` with properties like ``margin-left``, ``padding-right``, ``text-align: right``, etc. Use CSS classes instead to ensure RTLCSS can flip them for RTL languages. See :doc:`/i18n` for details.
+- **Non-logical directional properties in inline styles** - use CSS Logical Properties (``margin-inline-start``, ``padding-inline-end``, etc.) instead of physical properties (``margin-left``, ``padding-right``) when inline styles are unavoidable
+
+
+RTL-friendly styling quick reference
+-------------------------------------
+
+Kolibri supports right-to-left (RTL) languages like Arabic and Hebrew. Follow these guidelines to ensure your styles work in both directions:
+
+**Do:**
+
+✓ Use CSS classes in ``<style>`` blocks for directional properties
+
+✓ Use CSS Logical Properties when available (``margin-inline-start`` instead of ``margin-left``)
+
+✓ Use ``KGrid`` for layouts instead of floats or flexbox
+
+✓ Use the ``isRtl`` property for conditional logic when needed
+
+✓ Test your changes in an RTL language (switch to Arabic in settings)
+
+**Don't:**
+
+✗ Use inline styles with directional properties (``style="margin-left: 8px"``)
+
+✗ Use physical direction properties in inline bindings (``:style="{ marginLeft: '8px' }"``)
+
+✗ Use ``float: left/right`` for layout (use ``KGrid``)
+
+✗ Hard-code text alignment without considering RTL
+
+For comprehensive RTL guidance, see :doc:`/i18n`.
