@@ -78,6 +78,7 @@
   import { mapGetters, mapState } from 'vuex';
   import SidePanelModal from 'kolibri-common/components/SidePanelModal';
   import commonCoreStrings from 'kolibri/uiText/commonCoreStrings';
+  import { localeCompare } from 'kolibri/utils/i18n';
   import { coachStringsMixin } from '../../../common/commonCoachStrings';
   import IndividualLearnerSelectorTable from '../IndividualLearnerSelector/IndividualLearnerSelectorTable';
 
@@ -122,7 +123,7 @@
       ...mapState('classSummary', ['groupMap']),
       sortedGroups() {
         const groups = [...this.groups];
-        return groups.sort((a, b) => a.name.localeCompare(b.name));
+        return groups.sort((a, b) => localeCompare(a.name, b.name));
       },
       ungroupedLearnersIds() {
         return this.learners

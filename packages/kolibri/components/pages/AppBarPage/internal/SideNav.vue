@@ -262,6 +262,7 @@
 <script>
 
   import commonCoreStrings from 'kolibri/uiText/commonCoreStrings';
+  import { localeCompare } from 'kolibri/utils/i18n';
   import { UserKinds, NavComponentSections } from 'kolibri/constants';
   import useKResponsiveWindow from 'kolibri-design-system/lib/composables/useKResponsiveWindow';
   import CoreMenu from 'kolibri/components/CoreMenu';
@@ -509,7 +510,7 @@
         }
         // Still no difference?
         // Sort by the URL to ensure consistent ordering
-        return navItemA.url.localeCompare(navItemB.url);
+        return localeCompare(navItemA.url, navItemB.url);
       },
       filterByFullFacilityOnly(item) {
         return !this.isLearnerOnlyImport || !item.fullFacilityOnly;
